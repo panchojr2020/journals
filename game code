@@ -1,0 +1,284 @@
+*
+ * This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+   This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+   You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+package mostbasicjavafxmove;
+
+import java.util.ArrayList;
+import javafx.animation.AnimationTimer;
+import javafx.application.Application;
+import javafx.event.EventHandler;
+import javafx.scene.Group;
+import javafx.scene.Scene;
+import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
+import javafx.stage.Stage;
+import javafx.scene.text.Text;
+import javafx.event.ActionEvent;
+import javafx.scene.shape.Shape;
+
+import javafx.event.Event;
+import javafx.scene.Node;
+import javafx.scene.text.Font;
+
+/**
+* For more information see:
+ * http://stackoverflow.com/questions/21331519/how-to-get-smooth-animation-with-keypress-event-in-javafx
+ * http://docs.oracle.com/javafx/2/scenegraph/jfxpub-scenegraph.htm
+ * http://stackoverflow.com/questions/15013913/checking-collision-of-shapes-with-javafx
+ * https://gamedevelopment.tutsplus.com/tutorials/introduction-to-javafx-for-game-development--cms-23835
+ */
+public class Cleveland_1_JavaFXGame extends Application {
+
+    static ArrayList<Rectangle> badblockz = new ArrayList();
+    static ArrayList<String> input = new ArrayList<String>();
+    static Rectangle enemy1;
+    static Rectangle enemy2;
+    static Rectangle enemy3;
+    static Rectangle frog;
+    static Rectangle diamond;
+    static Text score; 
+   
+
+    @Override
+    public void start(Stage primaryStage) {
+
+        Group root = new Group();
+        Scene scene = new Scene(root);
+        primaryStage.setTitle("Crossy Frog");
+        primaryStage.setScene(scene);
+
+        Canvas canvas = new Canvas(600, 600);
+        
+        score = new Text (100, 100, "score goes here ");
+        score.setFill(Color.BLACK);
+        score.setFont(Font.font("Verdana", 42));
+        
+        //Notice gc is not being used yet 
+        GraphicsContext gc = canvas.getGraphicsContext2D();
+
+        //notice we are creating shape objects 
+        frog = new Rectangle(25, 300, 23, 23);
+        frog.setFill(Color.BLACK);
+
+        enemy1 = new Rectangle(100, 50, 25, 25);        enemy1.setFill(Color.BLUE);
+       
+        enemy2 = new Rectangle(165, 50, 25, 25);
+        enemy2.setFill(Color.BLUE);
+        
+        enemy3 = new Rectangle(230, 50, 25, 25);
+        enemy3.setFill(Color.BLUE);
+        
+        
+        diamond = new Rectangle(590, 0, 25, 600);
+       diamond .setFill(Color.CHOCOLATE);
+
+
+        // notice the difference in how an ArrayList adds items 
+        badblockz.add(enemy1);
+        badblockz.add(enemy2);
+        badblockz.add(enemy3);
+        
+
+        //we have created an animation timer --- the class MUST be overwritten - look below 
+       AnimationTimer timer = new MyTimer();
+
+        scene.setOnKeyPressed(new EventHandler<KeyEvent>() {
+            @Override
+            public void handle(KeyEvent event) {
+                String code = event.getCode().toString();
+               //    input.remove( code );
+                if (event.getCode() == KeyCode.RIGHT) { // don't use toString here!!!
+                    frog.setX(frog.getX() + 5);
+                    frog.setFill(Color.CADETBLUE);
+                    checkBounds(frog);
+                } else if (event.getCode() == KeyCode.LEFT) {
+                    frog.setX(frog.getX() - 5);
+                    frog.setFill(Color.RED);
+                    checkBounds(frog);
+                } else if (event.getCode() == KeyCode.UP) {
+                    frog.setY(frog.getY() - 5);
+                    frog.setFill(Color.GREEN);
+                    checkBounds(frog);
+                } else if (event.getCode() == KeyCode.DOWN) {
+                    frog.setY(frog.getY() + 5);
+                    frog.setFill(Color.BLACK);
+                    checkBounds(frog);
+                }
+            }
+        });
+
+        scene.setOnKeyReleased(new EventHandler<KeyEvent>() {
+            @Override
+            public void handle(KeyEvent event) {
+                if (event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.LEFT) {
+                     //enemyangleVelocity.set(0);
+                }
+            }
+        });
+
+        //try disabling canvas --- notice the difference 
+        root.getChildren().add(canvas);
+       //notice we are manually adding the shape objects to the "root" window
+        root.getChildren().add(enemy1);
+        root.getChildren().add(enemy2);
+        root.getChildren().add(enemy3);
+        root.getChildren().add(frog);
+        root.getChildren().add(diamond);
+        root.getChildren().add(score);
+        timer.start();
+        primaryStage.show();
+    }
+
+    /**
+     * @param args the command line arguments
+     *
+     * The same as before main just calls the args described above
+     */
+    ///  vvvvvvvvvvvv   MAIN vvvvvvvvvvv
+    public static void main(String[] args) {
+        launch(args);
+    }
+    static class Hero extends Rectangle {
+        
+        int health = 50;
+        int tehscore;
+        
+        
+        public Hero(int x, int y){
+            this.setX(x);
+            this.setY(y);
+            this.setHeight(33);
+            this.setWidth(33);
+            this.setFill(Color.PLUM);
+            int tehscore = 0;
+        }
+    
+    
+           public void setTehScore(int i){
+            this.tehscore = i;
+           
+        }
+           public int setTehScore(){
+           return this.tehscore;
+           
+               
+           } 
+           
+    
+     static class BadBlock extends Rectangle {
+        
+         boolean movedown = true;
+       
+        
+        
+        public BadBlock (int x, int y){
+            this.setX(x);
+            this.setY(y);
+            this.setHeight(33);
+            this.setWidth(33);
+            this.setFill(Color.PLUM);
+        }
+    }
+    
+    static class diamond extends Rectangle {
+        
+        
+         public diamond(int x, int y){
+            this.setX(x);
+            this.setY(y);
+            this.setHeight(23);
+            this.setWidth(23);
+            this.setFill(Color.PLUM);
+        
+    }
+    }
+    //// ^^^^^^^^^^^  MAIN ^^^^^^^^^^^^^
+    // we create our time here --- to animate 
+    private class MyTimer extends AnimationTimer {
+
+        boolean movedown = true;
+        
+        /// handle is defined by the abstract parent class -- it must be redined 
+        /// this is what happens again and again until stop()
+        @Override
+        public void handle(long now) {
+            // You can look at the key presses here as well -- this is one of many. Try others
+            if (input.contains("LEFT")) {
+                frog.setX(frog.getX() - 5);
+            }
+
+            doHandle();
+           /// notice doHandle()  is what happens again and again it's defined below
+        
+        }
+
+        private void doHandle() {
+            score.setText("Teh Score =" + hero.getTehScore());
+            checkBounds(frog);
+            
+             for (Rectangle badblock : badblockz) {
+            if (movedown && badblock.getY() < 555) {
+                badblock.setY(badblock.getY() + 5);
+            }
+           else if (!movedown && badblock.getY() > 1) {
+                badblock.setY(badblock.getY() - 5);
+            }
+           else if (badblock.getY() > 550) {
+               movedown = false;
+            }
+           else if (badblock.getY() < 1) {
+                movedown = true;
+            }
+            else {
+               System.err.println("mic check ");
+                
+               
+           }
+             }
+
+            // stop();
+            // System.out.println("Animation stopped");
+        }
+    }
+
+    private void checkBounds(Rectangle frog) {
+        // checkBounds is called in two different locations --- it's really only necessary in the animation dohandle
+        // experiment - check the differences
+
+        boolean collisionDetected = false;
+
+        // notice the difference in how an ArrayList iterates through items 
+        for (Rectangle badblock : badblockz) {
+            if (frog.getBoundsInParent().intersects(badblock.getBoundsInParent())) {
+                collisionDetected = true;
+                badblock.setFill(Color.RED);
+               
+            } else {
+                badblock.setFill(Color.BLUE);
+            }
+        }
+        if (collisionDetected) {
+            frog.setFill(Color.RED);
+        } else {
+            frog.setFill(Color.ORANGE);
+            
+            
+        }
+        
+
+    }
+    }
+}
